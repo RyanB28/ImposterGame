@@ -6,11 +6,25 @@ import { Input } from './components/ui/input'
 import { Button } from './components/ui/button'
 import { Slider } from './components/ui/slider'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select"
 
-const secretWords = [
-  "Elephant", "Pizza", "Bicycle", "Sunflower", "Telescope",
-  "Umbrella", "Volcano", "Butterfly", "Lighthouse", "Waterfall"
+const categories = [
+  { value: "object", label: "Object" },
+  { value: "person", label: "Famous Person" },
+  { value: "videogame", label: "Video Game" },
+  { value: "movie", label: "Movie" },
+  { value: "animal", label: "Animal" },
+  { value: "food", label: "Food" },
 ]
+
+const secretWordsByCategory = {
+  object: ["Telescope", "Umbrella", "Bicycle", "Lighthouse", "Volcano"],
+  person: ["Albert Einstein", "Marilyn Monroe", "Nelson Mandela", "Leonardo da Vinci", "Marie Curie"],
+  videogame: ["Minecraft", "The Legend of Zelda", "Fortnite", "Super Mario Bros", "Pac-Man"],
+  movie: ["The Godfather", "Star Wars", "Pulp Fiction", "Titanic", "The Matrix"],
+  animal: ["Elephant", "Penguin", "Giraffe", "Octopus", "Kangaroo"],
+  food: ["Pizza", "Sushi", "Tacos", "Chocolate", "Spaghetti"],
+}
 
 export default function Component() {
   const [players, setPlayers] = useState<string[]>([])
@@ -23,6 +37,7 @@ export default function Component() {
   const [gamePhase, setGamePhase] = useState<'setup' | 'reveal' | 'discussion' | 'voting' | 'result'>('setup')
   const [currentVote, setCurrentVote] = useState<string | null>(null)
   const [showSecret, setShowSecret] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState(categories[0].value)
 
   const addPlayer = () => {
     if (newPlayerName.trim() && players.length < 10) {
@@ -42,7 +57,9 @@ export default function Component() {
       const newImposters = shuffled.slice(0, imposterCount)
       setImposters(newImposters)
       setRevealedImposters([])
-      setSecretWord(secretWords[Math.floor(Math.random() * secretWords.length)])
+      const categoryWords = secretWordsByCategory[selectedCategory as keyof typeof secretWordsByCategory]
+      const newSecretWord = categoryWords[Math.floor(Math.random() * categoryWords.length)]
+      setSecretWord(newSecretWord)
       setCurrentPlayerIndex(0)
       setGamePhase('reveal')
       setCurrentVote(null)
@@ -116,6 +133,21 @@ export default function Component() {
                 step={1}
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Select Category:</label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Button onClick={startGame} disabled={players.length < 3 || imposterCount >= players.length - 1} className="w-full">
               Start Game
             </Button>
@@ -150,6 +182,7 @@ export default function Component() {
                   {showSecret ? <EyeOffIcon /> : <EyeIcon />}
                 </Button>
               </div>
+              <p className="text-sm text-muted-foreground mb-4">Category: {categories.find(c => c.value === selectedCategory)?.label}</p>
               <Button onClick={nextPlayer} className="w-full">
                 {currentPlayerIndex < players.length - 1 ? "Next Player" : "Start Discussion"}
               </Button>
@@ -160,6 +193,7 @@ export default function Component() {
         return (
           <div className="space-y-4 text-center">
             <p className="text-lg font-semibold">Time to discuss! Try to figure out who the imposters are.</p>
+            <p className="text-sm text-muted-foreground">Category: {categories.find(c => c.value === selectedCategory)?.label}</p>
             <Button onClick={startVoting}>Start Voting</Button>
           </div>
         )
@@ -167,6 +201,7 @@ export default function Component() {
         return (
           <div className="space-y-4">
             <p className="text-center text-lg font-semibold">Vote for who you think is an imposter:</p>
+            <p className="text-center text-sm text-muted-foreground">Category: {categories.find(c => c.value === selectedCategory)?.label}</p>
             <div className="grid grid-cols-2 gap-4">
               {players.map(player => (
                 <Button 
@@ -208,6 +243,7 @@ export default function Component() {
             <h2 className="text-xl font-bold">Game Over!</h2>
             <p>The imposters were: {imposters.join(', ')}</p>
             <p>The secret word was: {secretWord}</p>
+            <p className="text-sm text-muted-foreground">Category: {categories.find(c => c.value === selectedCategory)?.label}</p>
             <Button onClick={() => setGamePhase('setup')}>New Game</Button>
           </div>
         )
