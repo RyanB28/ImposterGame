@@ -39,8 +39,10 @@ export default function Component() {
   const [showSecret, setShowSecret] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(categories[0].value)
 
+  const maxPlayers = 12
+
   const addPlayer = () => {
-    if (newPlayerName.trim() && players.length < 10) {
+    if (newPlayerName.trim() && players.length < maxPlayers) {
       setPlayers([...players, newPlayerName.trim()])
       setNewPlayerName('')
     }
@@ -109,7 +111,7 @@ export default function Component() {
                 placeholder="Enter player name"
                 onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
               />
-              <Button onClick={addPlayer} disabled={players.length >= 10}>
+              <Button onClick={addPlayer} disabled={players.length >= maxPlayers}>
                 <PlusIcon className="w-4 h-4 mr-2" /> Add Player
               </Button>
             </div>
